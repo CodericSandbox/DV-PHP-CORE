@@ -354,7 +354,7 @@ trait collectionLib
         }
         $parseParams = function ($params, $counter) {
             foreach ($params as $key => $value) {
-                if (gettype($value) == 'array' && $value[0] = "#ITR") {
+                if (gettype($value) == 'array' && isset($value[0]) && $value[0] == "#ITR") {
                     $data = $value[1];
                     $value[2] = str_replace('#counter', $counter, $value[2]);
                     $itrData = $this->dot($data)[$value[2]];
@@ -684,6 +684,44 @@ trait collectionLib
         $this->results = $mergedCollection;
         return $this;
     }
+
+    public function accessElement($path, $collection = null)
+    {
+        if (!$this->execOrNot) {
+            return $this;
+        }
+        $collection = $this->useArgsOrPrevOutput($collection);
+        $array = json_decode(json_encode($collection, true), true);
+        $paths = explode('.', $path);
+        $result = $array;
+        foreach ($paths as $path) {
+            $result = $result[$path];
+        }
+        $this->results = $result;
+        return $this;
+    }
+
+    public function checkIfKeyExist($path, $collection = null)
+    {
+        if (!$this->execOrNot) {
+            return $this;
+        }
+        $collection = $this->useArgsOrPrevOutput($collection);
+        $array = json_decode(json_encode($collection, true), true);
+        $paths = explode('.', $path);
+        $result = $array;
+        foreach ($paths as $path) {
+            if (!isset($result[$path])) {
+                $this->results = false;
+                return $this;
+            }
+            $result = $result[$path];
+        }
+        $this->results = true;
+        return $this;
+
+    }
+
     public function isAssoc(array $arr)
     {
         if (!$this->execOrNot) {
